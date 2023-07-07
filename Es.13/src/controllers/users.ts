@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
 import { Request, Response } from "express";
-import { db } from "./../db.js";
+import { db } from "../db.js";
 import jwt from 'jsonwebtoken'
 
 const logIn = async (req: Request, res: Response) => {
@@ -14,7 +14,7 @@ const logIn = async (req: Request, res: Response) => {
             id: user.id,
             username
         }
-        const {SECRET = ''} = process.env;
+        const {SECRET = 'agashdgusjan'} = process.env;
         const token = jwt.sign(payload, SECRET)
 
         await db.none(`UPDATE users SET token=$2 WHERE id=$1`, [Number(user.id), String(token)])
@@ -39,4 +39,13 @@ const signUp = async (req: Request, res: Response) => {
         res.status(201).json({ id, msg: "User created successfully"});
     }
 }
-export { logIn, signUp };
+
+const logOut = async (req: Request, res: Response) => {
+    const user: any = req.user;
+    await db.none(`UPDATE users SET token=$2 WHERE id=$1`, [user?.id, null]);
+    res.status(200).json({msg: 'Logout was succesfull'})
+}
+
+
+
+export { logIn, signUp, logOut };

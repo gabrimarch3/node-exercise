@@ -1,25 +1,7 @@
 import { Request, Response } from "express";
 import Joi from "joi";
-import pgPromise from "pg-promise";
+import { db } from "../db.js";
 
-const db = pgPromise()("postgres://postgres:postgres@localhost:5432/video");
-
-const setupDB = async () => {
-  await db.none(`
-        DROP TABLE IF EXISTS planets
-
-        CREATE TABLE planets (
-          id SERIAL NOT NULL PRIMARY KEY,
-          name TEXT NOT NULL,
-          image TEXT
-        )
-  `);
-
-  await db.none(`INSERT INTO planets planet VALUES ('Terra')`);
-  await db.none(`INSERT INTO planets planet VALUES ('Marte')`);
-};
-
-setupDB();
 
 type Planet = {
   id: number;
@@ -80,6 +62,8 @@ const updateById = async (req: Request, res: Response) => {
   res.status(200).json({ msg: "The planet was updated" });
 };
 
+
+
 const deleteById = async (req: Request, res: Response) => {
   const { id } = req.params;
   await db.none(`DELETE FROM planets WHERE id=$1`, Number(id));
@@ -87,21 +71,14 @@ const deleteById = async (req: Request, res: Response) => {
 };
 
 const uploadImage = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const {id} = req.params;
   const fileName = req.file?.path;
-  if (fileName) {
-    db.none("UPDATE planets SET image=$2 WHERE id=$1", [id, fileName]);
-    res.status(201).json({ msg: "Image uploaded succesfully" });
+  if(fileName){
+    db.none('UPDATE planets SET image=$2 WHERE id=$1', [id, fileName])
+    res.status(201).json({msg: 'Image uploaded succesfully'})
   } else {
-    res.status(400).json({ msg: "Image failed to upload" });
+    res.status(400).json({msg: 'Image failed to upload'})
   }
-};
+}
 
-export {
-  getAll,
-  getOneById,
-  createPlanet,
-  updateById,
-  deleteById,
-  uploadImage,
-};
+export { getAll, getOneById, createPlanet, updateById, deleteById, uploadImage };
